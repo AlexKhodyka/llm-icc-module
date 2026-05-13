@@ -29,13 +29,38 @@
   <div class="container">
     <div class="hero">
       <h1>Оценивание</h1>
-      <p>Критериальная шкала оценивания ПА/РЦИ/КС.</p>
+      <p>Калькулятор баллов и краткая шкала ПА/РЦИ/КС.</p>
     </div>
 
     
-<div class="card">
-  <h2>Критериальная шкала (0–5)</h2>
-  <p class="small">Оценивайте каждый критерий отдельно; итог можно считать как сумму или среднее.</p>
+<div class="card" id="assessment-tool">
+  <h2>Оценивание</h2>
+  <p class="small">Выставьте баллы по ПА/РЦИ/КС (0–5). Сайт рассчитает сумму, среднее и ориентировочный уровень.</p>
+
+  <div class="grid two">
+    <div>
+      <label for="scorePA">ПА (0–5)</label>
+      <input class="input" id="scorePA" type="number" min="0" max="5" step="1" />
+    </div>
+    <div>
+      <label for="scoreRCI">РЦИ (0–5)</label>
+      <input class="input" id="scoreRCI" type="number" min="0" max="5" step="1" />
+    </div>
+  </div>
+
+  <label for="scoreCS">КС (0–5)</label>
+  <input class="input" id="scoreCS" type="number" min="0" max="5" step="1" />
+
+  <div id="scoreOut"></div>
+
+  <div class="btnrow">
+    <button class="btn primary" id="download-score" type="button">Скачать assessment.txt</button>
+  </div>
+  <div id="assess-status" class="note"></div>
+
+  <hr/>
+
+  <h3>Шкала (кратко)</h3>
   <table class="table">
     <thead><tr><th>Критерий</th><th>0–1</th><th>2–3</th><th>4–5</th></tr></thead>
     <tbody>
@@ -44,13 +69,10 @@
       <tr><td><b>КС</b></td><td>Компенсации нет</td><td>Частично работает</td><td>Оптимальная компенсация</td></tr>
     </tbody>
   </table>
-  <div class="note">Полная версия дескрипторов доступна в PDF в разделе «Материалы».</div>
 </div>
 
 
-    <div class="footer">
-      © 2026 • Учебно-методический ресурс (GitHub Pages).
-    </div>
+    <div class="footer">© 2026 • Учебно-методический ресурс (GitHub Pages).</div>
   </div>
 
   <script src="assets/script.js"></script>

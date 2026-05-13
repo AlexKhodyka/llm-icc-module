@@ -29,30 +29,32 @@
   <div class="container">
     <div class="hero">
       <h1>Этап 3</h1>
-      <p>Глубокое постредактирование и защита решения.</p>
+      <p>Финальный перевод + комментарий + выгрузка отчёта.</p>
     </div>
 
     
-<div class="card">
-  <h2>Этап 3 — Постредактирование (MTPE)</h2>
-  <p class="small">Доведите перевод до функциональной уместности и оформите переводческий комментарий.</p>
+<div class="card" id="stage3">
+  <h2>Этап 3 — Постредактирование и отчёт</h2>
+  <p class="small">Сделайте финальный перевод, затем сгенерируйте комментарий на основе аудита и скачайте отчёт.</p>
 
-  <h3>Алгоритм</h3>
-  <ol class="list">
-    <li>Сверка с оригиналом (смысл, модальность, имплицитность).</li>
-    <li>Правки по аудиту (устранение интерференции).</li>
-    <li>Компенсации (КС): пояснение/комментарий/описание/замена.</li>
-    <li>Финальная вычитка: жанр, регистр, терминология.</li>
-  </ol>
+  <label for="finalText">Финальный перевод</label>
+  <textarea id="finalText" placeholder="Вставьте финальный перевод здесь…"></textarea>
 
-  <h3>Продукт этапа</h3>
-  <p class="small">Финальный перевод + комментарий (обоснование ключевых решений).</p>
+  <div class="btnrow">
+    <button class="btn ok" id="gen-commentary" type="button">Сгенерировать комментарий из аудита</button>
+    <button class="btn" id="save-final" type="button">Сохранить Этап 3</button>
+    <button class="btn primary" id="download-report" type="button">Скачать отчёт (TXT)</button>
+  </div>
+  <div id="stage3-status" class="note"></div>
+
+  <label for="commentary">Переводческий комментарий</label>
+  <textarea id="commentary" placeholder="Комментарий появится здесь после генерации или вы можете написать его вручную."></textarea>
+
+  <div class="note">Оценивание выполняется на странице «Оценивание».</div>
 </div>
 
 
-    <div class="footer">
-      © 2026 • Учебно-методический ресурс (GitHub Pages).
-    </div>
+    <div class="footer">© 2026 • Учебно-методический ресурс (GitHub Pages).</div>
   </div>
 
   <script src="assets/script.js"></script>

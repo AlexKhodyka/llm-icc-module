@@ -29,40 +29,74 @@
   <div class="container">
     <div class="hero">
       <h1>Этап 1</h1>
-      <p>Формулирование расширенного запроса к модели.</p>
+      <p>Промпты A/B/C + вставка результатов генерации.</p>
     </div>
 
     
-<div class="card">
-  <h2>Этап 1 — Параметризация запроса (промпта)</h2>
-  <p class="small">Сформулируйте запрос так, чтобы LLM получила параметры адресата, жанра и коммуникативной задачи.</p>
+<div class="card" id="stage1">
+  <h2>Этап 1 — Параметризация запроса и получение 3 вариантов</h2>
+  <p class="small">1) Сгенерируйте промпты A/B/C. 2) Отправьте каждый промпт в выбранную LLM. 3) Вставьте результаты генерации ниже.</p>
+  <div class="note" id="case-meta">Текущий кейс: —</div>
 
-  <div class="note" id="case-meta">Текущий кейс: (если заполнен на главной странице)</div>
-
-  <h3>Генератор запроса</h3>
   <div class="btnrow">
-    <button class="btn ok" id="gen-prompt" type="button">Сгенерировать запрос из кейса</button>
-    <button class="btn" id="copy-prompt" type="button">Скопировать</button>
+    <button class="btn ok" id="gen-prompts" type="button">Сгенерировать промпты A/B/C</button>
+    <button class="btn" id="save-stage1" type="button">Сохранить Этап 1</button>
+    <button class="btn primary" id="to-stage2" type="button">Перейти к Этапу 2</button>
   </div>
-  <div id="prompt-status" class="note"></div>
-
-  <label for="prompt-area">Текст запроса</label>
-  <textarea id="prompt-area" placeholder="Нажмите «Сгенерировать запрос…» или вставьте свой текст."></textarea>
+  <div id="stage1-status" class="note"></div>
 
   <hr/>
 
-  <h3>Что студент сдаёт по Этапу 1</h3>
-  <ul class="list">
-    <li>3 варианта запроса (А/Б/В) с разными параметрами (адресат/жанр/стратегия).</li>
-    <li>3 результата генерации (черновые переводы).</li>
-    <li>Краткий выбор лучшего варианта (3–5 предложений: почему этот вариант ближе к цели).</li>
-  </ul>
+  <div class="split">
+    <div>
+      <h3>Промпт A</h3>
+      <div class="btnrow"><button class="btn" id="copyA" type="button">Скопировать A</button></div>
+      <textarea id="promptA" placeholder="Нажмите «Сгенерировать промпты…»"></textarea>
+
+      <h3>Результат A (вставьте ответ LLM)</h3>
+      <textarea id="outA" placeholder="Вставьте перевод и пункты B/C из ответа модели"></textarea>
+
+      <label><input type="radio" name="bestVariant" value="A"> Выбрать A как лучший</label>
+    </div>
+
+    <div>
+      <h3>Промпт B</h3>
+      <div class="btnrow"><button class="btn" id="copyB" type="button">Скопировать B</button></div>
+      <textarea id="promptB" placeholder="Нажмите «Сгенерировать промпты…»"></textarea>
+
+      <h3>Результат B (вставьте ответ LLM)</h3>
+      <textarea id="outB" placeholder="Вставьте перевод и пункты B/C из ответа модели"></textarea>
+
+      <label><input type="radio" name="bestVariant" value="B"> Выбрать B как лучший</label>
+    </div>
+  </div>
+
+  <div class="split" style="margin-top:16px">
+    <div>
+      <h3>Промпт C</h3>
+      <div class="btnrow"><button class="btn" id="copyC" type="button">Скопировать C</button></div>
+      <textarea id="promptC" placeholder="Нажмите «Сгенерировать промпты…»"></textarea>
+
+      <h3>Результат C (вставьте ответ LLM)</h3>
+      <textarea id="outC" placeholder="Вставьте перевод и пункты B/C из ответа модели"></textarea>
+
+      <label><input type="radio" name="bestVariant" value="C"> Выбрать C как лучший</label>
+    </div>
+
+    <div>
+      <h3>Что студент сдаёт</h3>
+      <ul class="list">
+        <li>3 промпта (A/B/C).</li>
+        <li>3 результата генерации.</li>
+        <li>Выбранный лучший вариант + короткое обоснование (в комментарии Этапа 3).</li>
+      </ul>
+      <div class="note">Данные сохраняются в браузере после нажатия «Сохранить Этап 1».</div>
+    </div>
+  </div>
 </div>
 
 
-    <div class="footer">
-      © 2026 • Учебно-методический ресурс (GitHub Pages).
-    </div>
+    <div class="footer">© 2026 • Учебно-методический ресурс (GitHub Pages).</div>
   </div>
 
   <script src="assets/script.js"></script>

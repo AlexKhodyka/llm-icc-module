@@ -29,31 +29,44 @@
   <div class="container">
     <div class="hero">
       <h1>Этап 2</h1>
-      <p>Выявление проблемных мест и подготовка правок.</p>
+      <p>Интерактивный аудит-лист: фиксация цифровой интерференции и рисков.</p>
     </div>
 
     
-<div class="card">
+<div class="card" id="stage2">
   <h2>Этап 2 — Аудит генерации</h2>
-  <p class="small">Выявите цифровую интерференцию: смысловые/прагматические и культурные искажения в черновом переводе.</p>
+  <p class="small">Вставьте выбранный черновик перевода (если не подставился автоматически), затем заполните аудит-лист и сохраните.</p>
 
-  <h3>Чек-лист</h3>
-  <ul class="list">
-    <li>Ложные добавления / выдуманные детали</li>
-    <li>Сглаживание модальности / оценочности</li>
-    <li>Искажения реалий / идиом / культурных отсылок</li>
-    <li>Нарушение жанра / регистра</li>
-    <li>Риск стереотипизации или неэтичной интерпретации</li>
-  </ul>
+  <label for="draft">Черновой перевод (выбранный вариант)</label>
+  <textarea id="draft" placeholder="Вставьте выбранный черновик перевода здесь…"></textarea>
 
-  <h3>Продукт этапа</h3>
-  <p class="small">Заполненный аудит-лист (фрагмент → риск → почему → предлагаемая правка).</p>
+  <div class="btnrow">
+    <button class="btn ok" id="add-row" type="button">Добавить строку</button>
+    <button class="btn" id="save-audit" type="button">Сохранить аудит</button>
+    <button class="btn" id="export-csv" type="button">Экспорт CSV</button>
+    <button class="btn primary" id="to-stage3" type="button">Перейти к Этапу 3</button>
+  </div>
+  <div id="stage2-status" class="note"></div>
+
+  <table class="table">
+    <thead>
+      <tr>
+        <th>Фрагмент</th>
+        <th>Тип риска</th>
+        <th>Почему это риск</th>
+        <th>Предлагаемая правка</th>
+        <th>Правка внесена</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody id="audit-rows"></tbody>
+  </table>
+
+  <div class="note">Заполненный аудит-лист используется для генерации комментария на Этапе 3.</div>
 </div>
 
 
-    <div class="footer">
-      © 2026 • Учебно-методический ресурс (GitHub Pages).
-    </div>
+    <div class="footer">© 2026 • Учебно-методический ресурс (GitHub Pages).</div>
   </div>
 
   <script src="assets/script.js"></script>

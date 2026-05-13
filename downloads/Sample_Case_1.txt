@@ -1,11 +1,11 @@
 Sample Case 1 / Пример кейса 1
-Title: Chengyu in a publicistic text / Чэнъюй в публицистическом контексте
+Title: Chengyu + publicistic genre / Чэнъюй + публицистический жанр
 Source language: Chinese
 Target language: Russian
-Audience: Mass audience (news portal)
+Audience: Mass audience
 Genre/context: Short news commentary
-Purpose: Inform and preserve evaluative tone; avoid literalness
-Strategy: Domestication OR Translation + short comment
+Purpose: Preserve evaluative tone; avoid literalness
+Strategy: Domestication or Translation + comment
 
 Source text:
 塞翁失马，焉知非福。最近的失败可能会带来意想不到的机会。

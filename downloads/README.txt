@@ -1,1 +1,1 @@
-Downloads folder: DOCX/PDF templates and sample cases.
+DOCX/PDF templates and sample cases.
