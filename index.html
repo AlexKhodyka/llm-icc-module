@@ -10,8 +10,8 @@
   <div class="nav">
     <div class="container">
       <div class="brand">
-        <div class="title">LLM‑ассистированный перевод</div>
-        <div class="sub">Цифровой учебно‑методический ресурс по формированию МКК переводчиков</div>
+        <div class="title">LLM-ассистированный перевод</div>
+        <div class="sub">Цифровой учебно-методический ресурс по формированию МКК переводчиков</div>
       </div>
       <div class="navlinks">
         <a href="index.html">Главная</a>
@@ -29,7 +29,7 @@
   <div class="container">
     <div class="hero">
       <h1>Главная</h1>
-      <p>Прототип сайта для GitHub Pages: цифровой продукт по итогам ВКР.</p>
+      <p>Цифровой модуль по LLM-ассистированному переводу и формированию межкультурной компетенции.</p>
     </div>
 
     
@@ -37,8 +37,8 @@
   <div class="card">
     <h2>Что это</h2>
     <p class="small">
-      Сайт‑ресурс для внедрения цифрового модуля «LLM‑ассистированный перевод как инструмент межкультурного посредничества».
-      Содержит задания, чек‑листы, критериальную шкалу оценивания и инструкции.
+      Ресурс предназначен для обучения LLM-ассистированному переводу как форме межкультурного посредничества:
+      параметризация запроса → аудит генерации → постредактирование (MTPE) и переводческий комментарий.
     </p>
     <div class="badges">
       <span class="badge">Параметризация запроса</span>
@@ -47,37 +47,88 @@
       <span class="badge">Шкала оценивания</span>
     </div>
     <div class="btnrow">
-      <a class="btn" href="module.html">Открыть модуль</a>
-      <a class="btn" href="assessment.html">Шкала оценивания</a>
+      <a class="btn primary" href="module.html">Открыть модуль</a>
+      <a class="btn" href="assessment.html">Оценивание</a>
       <a class="btn" href="downloads.html">Материалы</a>
     </div>
   </div>
 
   <div class="card">
-    <h2>Как использовать</h2>
+    <h2>Короткая инструкция</h2>
     <ol class="list">
-      <li>Выберите кейс (текст с культурно‑маркированными единицами).</li>
-      <li>Этап 1: задайте адресата/жанр/цель/стратегию в запросе.</li>
-      <li>Этап 2: выполните аудит генерации (РЦИ).</li>
+      <li>Заполните кейс (справа/ниже) и сохраните его.</li>
+      <li>Перейдите к Этапу 1 и сформируйте запрос на перевод.</li>
+      <li>Этап 2: найдите цифровую интерференцию и риски.</li>
       <li>Этап 3: выполните постредактирование и комментарий.</li>
       <li>Оцените по ПА/РЦИ/КС.</li>
     </ol>
-    <div class="callout small">
-      Для защиты «цифрового продукта» достаточно: описание модуля, задания, шкала оценивания,
-      шаблоны и 2–3 кейса.
-    </div>
   </div>
 </div>
 
 <div class="card" style="margin-top:16px">
-  <h2>Авторские показатели оценки результатов перевода</h2>
+  <h2>Кейс (форма ввода)</h2>
+  <p class="small">Данные кейса сохраняются в браузере (localStorage) и используются на Этапе 1.</p>
+
+  <div id="case-form">
+    <div class="grid two">
+      <div>
+        <label for="caseTitle">Название кейса</label>
+        <input class="input" id="caseTitle" placeholder="Например: Чэнъюй + публицистический текст" />
+      </div>
+      <div>
+        <label for="strategy">Стратегия</label>
+        <select id="strategy">
+          <option value="">Выберите…</option>
+          <option>Доместикация</option>
+          <option>Форенизация</option>
+          <option>Перевод + комментарий</option>
+        </select>
+      </div>
+    </div>
+
+    <div class="grid two">
+      <div>
+        <label for="sourceLang">Исходный язык</label>
+        <input class="input" id="sourceLang" placeholder="Например: Chinese" />
+      </div>
+      <div>
+        <label for="targetLang">Целевой язык</label>
+        <input class="input" id="targetLang" placeholder="Например: Russian" />
+      </div>
+    </div>
+
+    <div class="grid two">
+      <div>
+        <label for="audience">Адресат</label>
+        <input class="input" id="audience" placeholder="Например: массовая аудитория / академическая аудитория" />
+      </div>
+      <div>
+        <label for="genre">Жанр / контекст</label>
+        <input class="input" id="genre" placeholder="Например: новостная заметка / эссе / деловое письмо" />
+      </div>
+    </div>
+
+    <label for="purpose">Цель (коммуникативная задача)</label>
+    <input class="input" id="purpose" placeholder="Например: информировать и сохранить иронический тон" />
+
+    <label for="sourceText">Исходный текст</label>
+    <textarea id="sourceText" placeholder="Вставьте текст здесь…"></textarea>
+
+    <div class="btnrow">
+      <button class="btn ok" id="save-case" type="button">Сохранить кейс</button>
+      <button class="btn warn" id="clear-case" type="button">Очистить</button>
+      <a class="btn" href="stage1.html">Перейти к Этапу 1</a>
+    </div>
+
+    <div id="case-status" class="note">После сохранения откройте Этап 1 и нажмите «Сгенерировать запрос».</div>
+  </div>
+</div>
+
+<div class="card" style="margin-top:16px">
+  <h2>Показатели оценки результатов перевода</h2>
   <table class="table">
     <thead>
-      <tr>
-        <th>Показатель</th>
-        <th>Что измеряется</th>
-        <th>Что смотреть</th>
-      </tr>
+      <tr><th>Показатель</th><th>Что измеряется</th><th>Что смотреть</th></tr>
     </thead>
     <tbody>
       <tr>
@@ -101,8 +152,7 @@
 
 
     <div class="footer">
-      © 2026 • Учебно‑методический ресурс (прототип для GitHub Pages).
-      <br/>Добавьте ваши шаблоны (DOCX/PDF) и кейсы в раздел «Материалы».
+      © 2026 • Учебно-методический ресурс (GitHub Pages).
     </div>
   </div>
 

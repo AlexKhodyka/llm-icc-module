@@ -1,1 +1,1 @@
-Place your templates here (DOCX/PDF) and keep filenames consistent with links in downloads.html.
+Downloads folder: DOCX/PDF templates and sample cases.
