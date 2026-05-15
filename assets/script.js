@@ -5,6 +5,8 @@
     if(href === path) a.classList.add('active');
   });
 
+  const API_BASE = (window.LLM_API_BASE || "").trim();
+
   const KEY_CASE = 'llm_icc_case_v1';
   const KEY_STAGE1 = 'llm_icc_stage1_v1';
   const KEY_AUDIT = 'llm_icc_audit_v1';
@@ -28,9 +30,20 @@
   function safeJsonSet(key, obj){
     localStorage.setItem(key, JSON.stringify(obj));
   }
-
   function getCase(){ return safeJsonGet(KEY_CASE); }
   function setCase(o){ safeJsonSet(KEY_CASE, o); }
+
+  async function apiPost(path, payload){
+    if(!API_BASE) throw new Error("LLM_API_BASE is not set. Configure assets/config.js");
+    const resp = await fetch(API_BASE + path, {
+      method:"POST",
+      headers:{ "Content-Type":"application/json" },
+      body: JSON.stringify(payload)
+    });
+    const data = await resp.json();
+    if(!resp.ok) throw new Error(data?.error || "API error");
+    return data;
+  }
 
   function toPrompt(c, variant){
     const base = [];
@@ -75,12 +88,10 @@
     return base.join("\n");
   }
 
-  function copyText(text, statusEl){
-    navigator.clipboard.writeText(text).then(()=>{
-      if(statusEl){ statusEl.textContent = "Скопировано в буфер обмена."; statusEl.className="success"; }
-    }).catch(()=>{
-      if(statusEl){ statusEl.textContent = "Не удалось скопировать. Скопируйте вручную."; statusEl.className="warntext"; }
-    });
+  function setStatus(el, text, cls){
+    if(!el) return;
+    el.textContent = text;
+    el.className = cls || "note";
   }
 
   // INDEX: case form
@@ -93,10 +104,8 @@
         const el = document.getElementById(id);
         if(el && existing[id] !== undefined) el.value = existing[id];
       });
-      const status = document.getElementById('case-status');
-      if(status){ status.textContent = "Кейс загружен из браузера."; status.className = "success"; }
+      setStatus(document.getElementById('case-status'), "Кейс загружен из браузера.", "success");
     }
-
     document.getElementById('save-case')?.addEventListener('click', ()=>{
       const obj = {};
       fields.forEach(id=>{
@@ -104,29 +113,32 @@
         obj[id] = el ? el.value.trim() : "";
       });
       setCase(obj);
-      const status = document.getElementById('case-status');
-      if(status){ status.textContent = "Кейс сохранён. Перейдите к Этапу 1."; status.className = "success"; }
+      setStatus(document.getElementById('case-status'), "Кейс сохранён. Перейдите к Этапу 1.", "success");
     });
-
     document.getElementById('clear-case')?.addEventListener('click', ()=>{
       localStorage.removeItem(KEY_CASE);
       fields.forEach(id=>{
         const el = document.getElementById(id);
         if(el) el.value = "";
       });
-      const status = document.getElementById('case-status');
-      if(status){ status.textContent = "Кейс очищен."; status.className = "note"; }
+      setStatus(document.getElementById('case-status'), "Кейс очищен.", "note");
     });
+    // show API base status
+    const apiEl = document.getElementById('api-status');
+    if(apiEl){
+      apiEl.textContent = API_BASE ? ("API подключен: " + API_BASE) : "API не подключен: настройте assets/config.js";
+      apiEl.className = API_BASE ? "success" : "warntext";
+    }
   }
 
-  // STAGE 1: prompts + store drafts
+  // STAGE 1
   const stage1 = document.getElementById('stage1');
   if(stage1){
     const c = getCase() || {};
-    const meta = document.getElementById('case-meta');
-    if(meta){
-      meta.textContent = `Текущий кейс: ${c.caseTitle || "(без названия)"} • ${c.sourceLang || "?"} → ${c.targetLang || "?"} • Адресат: ${c.audience || "—"}`;
-    }
+    setStatus(document.getElementById('case-meta'),
+      `Текущий кейс: ${c.caseTitle || "(без названия)"} • ${c.sourceLang || "?"} → ${c.targetLang || "?"} • Адресат: ${c.audience || "—"}`,
+      "note"
+    );
 
     const prompts = {
       A: document.getElementById('promptA'),
@@ -143,13 +155,11 @@
     function load(){
       const s = safeJsonGet(KEY_STAGE1);
       if(s){
-        (prompts.A.value = s.promptA || ""), (prompts.B.value = s.promptB || ""), (prompts.C.value = s.promptC || "");
-        (outputs.A.value = s.outA || ""), (outputs.B.value = s.outB || ""), (outputs.C.value = s.outC || "");
+        prompts.A.value = s.promptA || ""; prompts.B.value = s.promptB || ""; prompts.C.value = s.promptC || "";
+        outputs.A.value = s.outA || ""; outputs.B.value = s.outB || ""; outputs.C.value = s.outC || "";
         const best = s.best || "";
-        document.querySelectorAll('input[name="bestVariant"]').forEach(r=>{
-          r.checked = (r.value === best);
-        });
-        if(status){ status.textContent = "Данные Этапа 1 загружены из браузера."; status.className="success"; }
+        document.querySelectorAll('input[name="bestVariant"]').forEach(r=>r.checked = (r.value === best));
+        setStatus(status, "Данные Этапа 1 загружены из браузера.", "success");
       }
     }
     load();
@@ -158,12 +168,29 @@
       prompts.A.value = toPrompt(c, "A");
       prompts.B.value = toPrompt(c, "B");
       prompts.C.value = toPrompt(c, "C");
-      if(status){ status.textContent = "Промпты A/B/C сгенерированы."; status.className="success"; }
+      setStatus(status, "Промпты A/B/C сгенерированы.", "success");
     });
 
-    document.getElementById('copyA')?.addEventListener('click', ()=>copyText(prompts.A.value, status));
-    document.getElementById('copyB')?.addEventListener('click', ()=>copyText(prompts.B.value, status));
-    document.getElementById('copyC')?.addEventListener('click', ()=>copyText(prompts.C.value, status));
+    document.getElementById('copyA')?.addEventListener('click', ()=>navigator.clipboard.writeText(prompts.A.value));
+    document.getElementById('copyB')?.addEventListener('click', ()=>navigator.clipboard.writeText(prompts.B.value));
+    document.getElementById('copyC')?.addEventListener('click', ()=>navigator.clipboard.writeText(prompts.C.value));
+
+    async function genViaAPI(variant){
+      try{
+        setStatus(status, `Генерация ${variant}…`, "note");
+        const promptText = prompts[variant].value.trim();
+        if(!promptText) throw new Error("Промпт пустой. Сначала сгенерируйте/вставьте промпт.");
+        const data = await apiPost("/api/translate", { prompt: promptText });
+        outputs[variant].value = data.text || "";
+        setStatus(status, `Генерация ${variant} готова.`, "success");
+      }catch(e){
+        setStatus(status, e.message, "warntext");
+      }
+    }
+
+    document.getElementById('genA')?.addEventListener('click', ()=>genViaAPI("A"));
+    document.getElementById('genB')?.addEventListener('click', ()=>genViaAPI("B"));
+    document.getElementById('genC')?.addEventListener('click', ()=>genViaAPI("C"));
 
     document.getElementById('save-stage1')?.addEventListener('click', ()=>{
       const best = (document.querySelector('input[name="bestVariant"]:checked')||{}).value || "";
@@ -172,11 +199,10 @@
         outA: outputs.A.value, outB: outputs.B.value, outC: outputs.C.value,
         best
       });
-      if(status){ status.textContent = "Этап 1 сохранён. Перейдите к Этапу 2."; status.className="success"; }
+      setStatus(status, "Этап 1 сохранён. Перейдите к Этапу 2.", "success");
     });
 
     document.getElementById('to-stage2')?.addEventListener('click', ()=>{
-      // set "selected draft" into audit store
       const s = safeJsonGet(KEY_STAGE1) || {};
       const best = (document.querySelector('input[name="bestVariant"]:checked')||{}).value || s.best || "A";
       const chosen = (best==="B"? outputs.B.value : best==="C"? outputs.C.value : outputs.A.value);
@@ -188,7 +214,7 @@
     });
   }
 
-  // STAGE 2: audit worksheet + export
+  // STAGE 2
   const stage2 = document.getElementById('stage2');
   if(stage2){
     const audit = safeJsonGet(KEY_AUDIT) || { rows: [] };
@@ -197,65 +223,52 @@
     if(draft) draft.value = audit.draft || "";
 
     const tbody = document.getElementById('audit-rows');
+
     function renderRows(){
       tbody.innerHTML = "";
       const rows = audit.rows || [];
       rows.forEach((r, idx)=>{
         const tr = document.createElement('tr');
 
+        function makeTA(val, onInput){
+          const ta = document.createElement('textarea');
+          ta.value = val || "";
+          ta.style.minHeight = "60px";
+          ta.addEventListener('input', ()=>onInput(ta.value));
+          return ta;
+        }
+
         const tdFrag = document.createElement('td');
-        const frag = document.createElement('textarea');
-        frag.value = r.fragment || "";
-        frag.style.minHeight = "60px";
-        frag.addEventListener('input', ()=>{ r.fragment = frag.value; });
-        tdFrag.appendChild(frag);
+        tdFrag.appendChild(makeTA(r.fragment, v=>r.fragment=v));
 
         const tdType = document.createElement('td');
         const sel = document.createElement('select');
         RiskTypes.forEach(t=>{
-          const opt = document.createElement('option');
-          opt.textContent = t; opt.value = t;
-          sel.appendChild(opt);
+          const opt = document.createElement('option'); opt.value=t; opt.textContent=t; sel.appendChild(opt);
         });
         sel.value = r.riskType || RiskTypes[0];
-        sel.addEventListener('change', ()=>{ r.riskType = sel.value; });
+        sel.addEventListener('change', ()=>r.riskType=sel.value);
         tdType.appendChild(sel);
 
         const tdWhy = document.createElement('td');
-        const why = document.createElement('textarea');
-        why.value = r.why || "";
-        why.style.minHeight = "60px";
-        why.addEventListener('input', ()=>{ r.why = why.value; });
-        tdWhy.appendChild(why);
+        tdWhy.appendChild(makeTA(r.why, v=>r.why=v));
 
         const tdFix = document.createElement('td');
-        const fix = document.createElement('textarea');
-        fix.value = r.fix || "";
-        fix.style.minHeight = "60px";
-        fix.addEventListener('input', ()=>{ r.fix = fix.value; });
-        tdFix.appendChild(fix);
+        tdFix.appendChild(makeTA(r.fix, v=>r.fix=v));
 
         const tdDone = document.createElement('td');
         const done = document.createElement('select');
         ["","да","нет"].forEach(v=>{
-          const opt = document.createElement('option');
-          opt.textContent = v===""?"—":v; opt.value = v;
-          done.appendChild(opt);
+          const opt = document.createElement('option'); opt.value=v; opt.textContent = v===""?"—":v; done.appendChild(opt);
         });
         done.value = r.done || "";
-        done.addEventListener('change', ()=>{ r.done = done.value; });
+        done.addEventListener('change', ()=>r.done=done.value);
         tdDone.appendChild(done);
 
         const tdDel = document.createElement('td');
         const del = document.createElement('button');
-        del.className = "btn warn";
-        del.type="button";
-        del.textContent = "Удалить";
-        del.addEventListener('click', ()=>{
-          rows.splice(idx,1);
-          audit.rows = rows;
-          renderRows();
-        });
+        del.className="btn warn"; del.type="button"; del.textContent="Удалить";
+        del.addEventListener('click', ()=>{ rows.splice(idx,1); audit.rows=rows; renderRows(); });
         tdDel.appendChild(del);
 
         [tdFrag, tdType, tdWhy, tdFix, tdDone, tdDel].forEach(td=>tr.appendChild(td));
@@ -274,30 +287,21 @@
     document.getElementById('save-audit')?.addEventListener('click', ()=>{
       audit.draft = draft.value;
       safeJsonSet(KEY_AUDIT, audit);
-      if(status){ status.textContent="Аудит сохранён. Перейдите к Этапу 3."; status.className="success"; }
+      setStatus(status, "Аудит сохранён. Перейдите к Этапу 3.", "success");
     });
 
-    function toCSV(){
+    document.getElementById('export-csv')?.addEventListener('click', ()=>{
       const rows = audit.rows || [];
       const header = ["fragment","riskType","why","fix","done"];
       const esc = (s)=>('"'+String(s||"").replaceAll('"','""')+'"');
       const lines = [header.join(",")];
-      rows.forEach(r=>{
-        lines.push([r.fragment,r.riskType,r.why,r.fix,r.done].map(esc).join(","));
-      });
-      return lines.join("\n");
-    }
-
-    document.getElementById('export-csv')?.addEventListener('click', ()=>{
-      const csv = toCSV();
+      rows.forEach(r=>lines.push([r.fragment,r.riskType,r.why,r.fix,r.done].map(esc).join(",")));
+      const csv = lines.join("\n");
       const blob = new Blob([csv], {type:"text/csv;charset=utf-8"});
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = "audit_list.csv";
-      a.click();
+      const a = document.createElement('a'); a.href=url; a.download="audit_list.csv"; a.click();
       URL.revokeObjectURL(url);
-      if(status){ status.textContent="CSV экспортирован."; status.className="success"; }
+      setStatus(status, "CSV экспортирован.", "success");
     });
 
     document.getElementById('to-stage3')?.addEventListener('click', ()=>{
@@ -307,7 +311,7 @@
     });
   }
 
-  // STAGE 3: final translation + commentary builder
+  // STAGE 3
   const stage3 = document.getElementById('stage3');
   if(stage3){
     const c = getCase() || {};
@@ -317,10 +321,9 @@
 
     const finalText = document.getElementById('finalText');
     const commentary = document.getElementById('commentary');
-    const qc = document.getElementById('qc');
 
-    if(finalText) finalText.value = final.finalText || "";
-    if(commentary) commentary.value = final.commentary || "";
+    finalText.value = final.finalText || "";
+    commentary.value = final.commentary || "";
 
     document.getElementById('gen-commentary')?.addEventListener('click', ()=>{
       const rows = (audit.rows || []).slice(0,5);
@@ -347,12 +350,12 @@
       lines.push("- Проверены культурно-маркированные элементы и компенсации");
       lines.push("- Выполнена финальная вычитка");
       commentary.value = lines.join("\n");
-      if(status){ status.textContent="Комментарий сгенерирован."; status.className="success"; }
+      setStatus(status, "Комментарий сгенерирован.", "success");
     });
 
     document.getElementById('save-final')?.addEventListener('click', ()=>{
       safeJsonSet(KEY_FINAL, { finalText: finalText.value, commentary: commentary.value });
-      if(status){ status.textContent="Этап 3 сохранён."; status.className="success"; }
+      setStatus(status, "Этап 3 сохранён.", "success");
     });
 
     document.getElementById('download-report')?.addEventListener('click', ()=>{
@@ -367,15 +370,33 @@
       ].join("\n");
       const blob = new Blob([txt], {type:"text/plain;charset=utf-8"});
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = "translation_report.txt";
-      a.click();
+      const a = document.createElement('a'); a.href=url; a.download="translation_report.txt"; a.click();
       URL.revokeObjectURL(url);
+    });
+
+    // Push for scoring helper: store source/target in localStorage for assessment
+    document.getElementById('push-to-score')?.addEventListener('click', ()=>{
+      const cmeta = getCase() || {};
+      safeJsonSet(KEY_SCORE, safeJsonGet(KEY_SCORE) || {PA:0, RCI:0, CS:0});
+      safeJsonSet("llm_icc_score_payload_v1", {
+        sourceText: cmeta.sourceText || "",
+        targetText: finalText.value || "",
+        caseMeta: {
+          caseTitle: cmeta.caseTitle || "",
+          sourceLang: cmeta.sourceLang || "",
+          targetLang: cmeta.targetLang || "",
+          audience: cmeta.audience || "",
+          genre: cmeta.genre || "",
+          purpose: cmeta.purpose || "",
+          strategy: cmeta.strategy || ""
+        },
+        auditRows: (safeJsonGet(KEY_AUDIT) || {}).rows || []
+      });
+      setStatus(status, "Данные переданы в раздел «Оценивание».", "success");
     });
   }
 
-  // ASSESSMENT: scoring calculator
+  // ASSESSMENT
   const assess = document.getElementById('assessment-tool');
   if(assess){
     const s = safeJsonGet(KEY_SCORE) || { PA:0, RCI:0, CS:0 };
@@ -408,25 +429,36 @@
       const PA = Number(pa.value||0), RCI = Number(rci.value||0), CS = Number(cs.value||0);
       const sum = PA+RCI+CS;
       const avg = (sum/3).toFixed(2);
-      const txt = [
-        "Критериальная оценка (ПА/РЦИ/КС)",
-        `ПА: ${PA}`,
-        `РЦИ: ${RCI}`,
-        `КС: ${CS}`,
-        `Сумма: ${sum}`,
-        `Среднее: ${avg}`
-      ].join("\n");
+      const txt = ["Критериальная оценка (ПА/РЦИ/КС)", `ПА: ${PA}`, `РЦИ: ${RCI}`, `КС: ${CS}`, `Сумма: ${sum}`, `Среднее: ${avg}`].join("\n");
       const blob = new Blob([txt], {type:"text/plain;charset=utf-8"});
       const url = URL.createObjectURL(blob);
-      const a = document.createElement('a');
-      a.href = url;
-      a.download = "assessment.txt";
-      a.click();
+      const a = document.createElement('a'); a.href=url; a.download="assessment.txt"; a.click();
       URL.revokeObjectURL(url);
-      if(status){ status.textContent="Файл assessment.txt скачан."; status.className="success"; }
+      setStatus(status, "assessment.txt скачан.", "success");
     });
-  }
 
-  // Note about translation/generation (static site)
-  // No API calls by default; user pastes LLM output into fields.
+    // AI scoring via server proxy
+    document.getElementById('ai-score')?.addEventListener('click', async ()=>{
+      try{
+        const payload = safeJsonGet("llm_icc_score_payload_v1") || {};
+        if(!payload.sourceText || !payload.targetText) throw new Error("Нет данных source/target. Заполните Этап 3 и нажмите «Передать в оценивание».");
+        setStatus(status, "Запрос оценки к серверу…", "note");
+        const data = await apiPost("/api/score", payload);
+        if(typeof data.PA === "number") pa.value = data.PA;
+        if(typeof data.RCI === "number") rci.value = data.RCI;
+        if(typeof data.CS === "number") cs.value = data.CS;
+        update();
+        setStatus(status, data.rationale ? ("AI-оценка: " + data.rationale) : "AI-оценка получена.", "success");
+      }catch(e){
+        setStatus(status, e.message, "warntext");
+      }
+    });
+
+    // show API base status
+    const apiEl = document.getElementById('api-status2');
+    if(apiEl){
+      apiEl.textContent = API_BASE ? ("API подключен: " + API_BASE) : "API не подключен: настройте assets/config.js";
+      apiEl.className = API_BASE ? "success" : "warntext";
+    }
+  }
 })();

@@ -29,13 +29,13 @@
   <div class="container">
     <div class="hero">
       <h1>Этап 1</h1>
-      <p>Промпты A/B/C + вставка результатов генерации.</p>
+      <p>Промпты A/B/C и (опционально) генерация через серверный прокси.</p>
     </div>
 
     
 <div class="card" id="stage1">
-  <h2>Этап 1 — Параметризация запроса и получение 3 вариантов</h2>
-  <p class="small">1) Сгенерируйте промпты A/B/C. 2) Отправьте каждый промпт в выбранную LLM. 3) Вставьте результаты генерации ниже.</p>
+  <h2>Этап 1 — Промпты A/B/C и результаты генерации</h2>
+  <p class="small">Нажмите «Сгенерировать промпты», затем (опционально) «Генерировать через API» или вставьте ответы вручную.</p>
   <div class="note" id="case-meta">Текущий кейс: —</div>
 
   <div class="btnrow">
@@ -50,23 +50,27 @@
   <div class="split">
     <div>
       <h3>Промпт A</h3>
-      <div class="btnrow"><button class="btn" id="copyA" type="button">Скопировать A</button></div>
+      <div class="btnrow">
+        <button class="btn" id="copyA" type="button">Скопировать A</button>
+        <button class="btn primary" id="genA" type="button">Генерировать через API</button>
+      </div>
       <textarea id="promptA" placeholder="Нажмите «Сгенерировать промпты…»"></textarea>
 
-      <h3>Результат A (вставьте ответ LLM)</h3>
-      <textarea id="outA" placeholder="Вставьте перевод и пункты B/C из ответа модели"></textarea>
-
+      <h3>Результат A</h3>
+      <textarea id="outA" placeholder="Ответ модели (перевод + пункты B/C, если были)"></textarea>
       <label><input type="radio" name="bestVariant" value="A"> Выбрать A как лучший</label>
     </div>
 
     <div>
       <h3>Промпт B</h3>
-      <div class="btnrow"><button class="btn" id="copyB" type="button">Скопировать B</button></div>
+      <div class="btnrow">
+        <button class="btn" id="copyB" type="button">Скопировать B</button>
+        <button class="btn primary" id="genB" type="button">Генерировать через API</button>
+      </div>
       <textarea id="promptB" placeholder="Нажмите «Сгенерировать промпты…»"></textarea>
 
-      <h3>Результат B (вставьте ответ LLM)</h3>
-      <textarea id="outB" placeholder="Вставьте перевод и пункты B/C из ответа модели"></textarea>
-
+      <h3>Результат B</h3>
+      <textarea id="outB" placeholder="Ответ модели (перевод + пункты B/C, если были)"></textarea>
       <label><input type="radio" name="bestVariant" value="B"> Выбрать B как лучший</label>
     </div>
   </div>
@@ -74,23 +78,21 @@
   <div class="split" style="margin-top:16px">
     <div>
       <h3>Промпт C</h3>
-      <div class="btnrow"><button class="btn" id="copyC" type="button">Скопировать C</button></div>
+      <div class="btnrow">
+        <button class="btn" id="copyC" type="button">Скопировать C</button>
+        <button class="btn primary" id="genC" type="button">Генерировать через API</button>
+      </div>
       <textarea id="promptC" placeholder="Нажмите «Сгенерировать промпты…»"></textarea>
 
-      <h3>Результат C (вставьте ответ LLM)</h3>
-      <textarea id="outC" placeholder="Вставьте перевод и пункты B/C из ответа модели"></textarea>
-
+      <h3>Результат C</h3>
+      <textarea id="outC" placeholder="Ответ модели (перевод + пункты B/C, если были)"></textarea>
       <label><input type="radio" name="bestVariant" value="C"> Выбрать C как лучший</label>
     </div>
 
     <div>
-      <h3>Что студент сдаёт</h3>
-      <ul class="list">
-        <li>3 промпта (A/B/C).</li>
-        <li>3 результата генерации.</li>
-        <li>Выбранный лучший вариант + короткое обоснование (в комментарии Этапа 3).</li>
-      </ul>
-      <div class="note">Данные сохраняются в браузере после нажатия «Сохранить Этап 1».</div>
+      <h3>Примечание</h3>
+      <p class="small">Генерация через API работает только после настройки серверной прослойки и assets/config.js.</p>
+      <p class="small">Данные сохраняются в браузере (localStorage).</p>
     </div>
   </div>
 </div>
@@ -99,6 +101,7 @@
     <div class="footer">© 2026 • Учебно-методический ресурс (GitHub Pages).</div>
   </div>
 
+  <script src="assets/config.js"></script>
   <script src="assets/script.js"></script>
 </body>
 </html>

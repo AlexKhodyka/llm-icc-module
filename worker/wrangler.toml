@@ -1,0 +1,11 @@
+name = "llm-icc-proxy"
+main = "worker.js"
+compatibility_date = "2026-05-13"
+
+[vars]
+OPENAI_MODEL = "gpt-4.1"
+# Comma-separated allowed Origins (GitHub Pages origin is usually https://<username>.github.io)
+ALLOWED_ORIGINS = "https://alexkhodyka.github.io"
+
+# Set OPENAI_API_KEY as a secret with:
+# wrangler secret put OPENAI_API_KEY

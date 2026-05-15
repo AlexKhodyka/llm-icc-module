@@ -29,14 +29,12 @@
   <div class="container">
     <div class="hero">
       <h1>Этап 3</h1>
-      <p>Финальный перевод + комментарий + выгрузка отчёта.</p>
+      <p>Финальный перевод + комментарий + отчёт.</p>
     </div>
 
     
 <div class="card" id="stage3">
   <h2>Этап 3 — Постредактирование и отчёт</h2>
-  <p class="small">Сделайте финальный перевод, затем сгенерируйте комментарий на основе аудита и скачайте отчёт.</p>
-
   <label for="finalText">Финальный перевод</label>
   <textarea id="finalText" placeholder="Вставьте финальный перевод здесь…"></textarea>
 
@@ -44,19 +42,19 @@
     <button class="btn ok" id="gen-commentary" type="button">Сгенерировать комментарий из аудита</button>
     <button class="btn" id="save-final" type="button">Сохранить Этап 3</button>
     <button class="btn primary" id="download-report" type="button">Скачать отчёт (TXT)</button>
+    <button class="btn" id="push-to-score" type="button">Передать в оценивание</button>
   </div>
   <div id="stage3-status" class="note"></div>
 
   <label for="commentary">Переводческий комментарий</label>
   <textarea id="commentary" placeholder="Комментарий появится здесь после генерации или вы можете написать его вручную."></textarea>
-
-  <div class="note">Оценивание выполняется на странице «Оценивание».</div>
 </div>
 
 
     <div class="footer">© 2026 • Учебно-методический ресурс (GitHub Pages).</div>
   </div>
 
+  <script src="assets/config.js"></script>
   <script src="assets/script.js"></script>
 </body>
 </html>

@@ -29,13 +29,14 @@
   <div class="container">
     <div class="hero">
       <h1>Оценивание</h1>
-      <p>Калькулятор баллов и краткая шкала ПА/РЦИ/КС.</p>
+      <p>Калькулятор баллов и AI-оценка (опционально).</p>
     </div>
 
     
 <div class="card" id="assessment-tool">
   <h2>Оценивание</h2>
-  <p class="small">Выставьте баллы по ПА/РЦИ/КС (0–5). Сайт рассчитает сумму, среднее и ориентировочный уровень.</p>
+  <p class="small">Баллы (0–5) + расчёт показателей. При наличии API можно получить AI-оценку.</p>
+  <div id="api-status2" class="note"></div>
 
   <div class="grid two">
     <div>
@@ -55,26 +56,16 @@
 
   <div class="btnrow">
     <button class="btn primary" id="download-score" type="button">Скачать assessment.txt</button>
+    <button class="btn ok" id="ai-score" type="button">AI-оценка через API</button>
   </div>
   <div id="assess-status" class="note"></div>
-
-  <hr/>
-
-  <h3>Шкала (кратко)</h3>
-  <table class="table">
-    <thead><tr><th>Критерий</th><th>0–1</th><th>2–3</th><th>4–5</th></tr></thead>
-    <tbody>
-      <tr><td><b>ПА</b></td><td>Игнорирование адресата/жанра</td><td>В целом уместно</td><td>Полная уместность</td></tr>
-      <tr><td><b>РЦИ</b></td><td>Сбои не замечены</td><td>Большинство выявлено</td><td>Все ключевые исправлены</td></tr>
-      <tr><td><b>КС</b></td><td>Компенсации нет</td><td>Частично работает</td><td>Оптимальная компенсация</td></tr>
-    </tbody>
-  </table>
 </div>
 
 
     <div class="footer">© 2026 • Учебно-методический ресурс (GitHub Pages).</div>
   </div>
 
+  <script src="assets/config.js"></script>
   <script src="assets/script.js"></script>
 </body>
 </html>
