@@ -50,6 +50,23 @@
 
   <label for="commentary">Переводческий комментарий</label>
   <textarea id="commentary" placeholder="Комментарий появится здесь после генерации или вы можете написать его вручную."></textarea>
+
+  <h3>Мини-глоссарий: 10 ключевых единиц</h3>
+  <p class="small">Заполните ровно 10 культурно маркированных единиц, идиом, реалий или безэквивалентных терминов. Этот блок попадёт в итоговый отчёт.</p>
+  <table class="table glossary-table">
+    <thead>
+      <tr>
+        <th style="width:52px">№</th>
+        <th>Исходная единица</th>
+        <th>Переводческое решение</th>
+        <th>Тип компенсации</th>
+      </tr>
+    </thead>
+    <tbody id="glossary-rows"></tbody>
+  </table>
+  <div class="btnrow">
+    <button class="btn" id="save-glossary" type="button">Сохранить глоссарий</button>
+  </div>
 </div>
 
 

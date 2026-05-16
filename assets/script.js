@@ -18,6 +18,7 @@
   const KEY_STAGE1  = 'llm_icc_stage1_v1';
   const KEY_AUDIT   = 'llm_icc_audit_v1';
   const KEY_FINAL   = 'llm_icc_final_v1';
+  const KEY_GLOSSARY = 'llm_icc_glossary_v1';
   const KEY_SCORE   = 'llm_icc_score_v1';
   const KEY_PAYLOAD = 'llm_icc_score_payload_v1';
 
@@ -65,6 +66,17 @@
   let _anthropicKey = ''; // только в памяти
 
   // Прямой браузерный вызов внешних API отключён: сайт по умолчанию работает автономно.
+
+  async function apiPostProxy(endpoint, payload) {
+    const resp = await fetch(API_BASE + endpoint, {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify(payload),
+    });
+    const data = await resp.json();
+    if (!resp.ok) throw new Error(data?.error || 'Ошибка прокси-сервера');
+    return data;
+  }
 
   async function callLLM(proxyEndpoint, proxyPayload, systemPrompt, userPrompt, statusEl) {
     if (API_BASE) {
@@ -149,9 +161,20 @@
     });
 
     document.getElementById('clear-case')?.addEventListener('click', () => {
+      const ok = confirm('Вы уверены, что хотите удалить данные текущего кейса? Это действие нельзя отменить.');
+      if (!ok) {
+        setStatus(document.getElementById('case-status'), 'Очистка отменена.', 'note');
+        return;
+      }
       localStorage.removeItem(KEY_CASE);
+      localStorage.removeItem(KEY_STAGE1);
+      localStorage.removeItem(KEY_AUDIT);
+      localStorage.removeItem(KEY_FINAL);
+      localStorage.removeItem(KEY_GLOSSARY);
+      localStorage.removeItem(KEY_SCORE);
+      localStorage.removeItem(KEY_PAYLOAD);
       fields.forEach(id => { const el = document.getElementById(id); if (el) el.value = ''; });
-      setStatus(document.getElementById('case-status'), 'Кейс очищен.', 'note');
+      setStatus(document.getElementById('case-status'), 'Кейс и связанные этапы очищены.', 'note');
     });
 
     const apiEl = document.getElementById('api-status');
@@ -203,7 +226,7 @@
     document.getElementById('gen-prompts')?.addEventListener('click', () => {
       if (!c.sourceText) { setStatus(status, '⚠️ Сначала сохраните кейс на Главной.', 'warntext'); return; }
       ['A','B','C'].forEach(v => { if (prompts[v]) prompts[v].value = toPrompt(c, v); });
-      setStatus(status, '✅ Промпты A/B/C сгенерированы. Скопируйте в LLM или нажмите «Генерировать через API».', 'success');
+      setStatus(status, API_BASE ? '✅ Промпты A/B/C сгенерированы. Можно использовать API или скопировать промпты вручную.' : '✅ Промпты A/B/C сгенерированы. Скопируйте промпт во внешнюю LLM и вставьте ответ вручную.', 'success');
     });
 
     ['A','B','C'].forEach(v => {
@@ -356,6 +379,81 @@
     if (finalText)  finalText.value  = finalSaved.finalText  || '';
     if (commentary) commentary.value = finalSaved.commentary || '';
 
+    const glossaryTbody = document.getElementById('glossary-rows');
+    const glossarySaved = safeGet(KEY_GLOSSARY) || finalSaved.glossary || [];
+    const CompensationTypes = [
+      '—',
+      'Описание / пояснение',
+      'Культурный комментарий',
+      'Функциональный аналог',
+      'Генерализация',
+      'Конкретизация',
+      'Транслитерация + пояснение',
+      'Опущение с компенсацией',
+      'Иное'
+    ];
+
+    function getGlossaryRowsFromDOM() {
+      if (!glossaryTbody) return glossarySaved;
+      return Array.from(glossaryTbody.querySelectorAll('tr')).map(tr => ({
+        sourceUnit: tr.querySelector('[data-glossary="sourceUnit"]')?.value || '',
+        translationSolution: tr.querySelector('[data-glossary="translationSolution"]')?.value || '',
+        compensationType: tr.querySelector('[data-glossary="compensationType"]')?.value || '—',
+      }));
+    }
+
+    function renderGlossaryRows() {
+      if (!glossaryTbody) return;
+      glossaryTbody.innerHTML = '';
+      for (let i = 0; i < 10; i++) {
+        const row = glossarySaved[i] || {};
+        const tr = document.createElement('tr');
+
+        const tdNum = document.createElement('td');
+        tdNum.textContent = String(i + 1);
+
+        const tdSource = document.createElement('td');
+        const source = document.createElement('input');
+        source.className = 'input';
+        source.dataset.glossary = 'sourceUnit';
+        source.placeholder = 'Реалия, идиома, термин...';
+        source.value = row.sourceUnit || '';
+        tdSource.appendChild(source);
+
+        const tdSolution = document.createElement('td');
+        const solution = document.createElement('input');
+        solution.className = 'input';
+        solution.dataset.glossary = 'translationSolution';
+        solution.placeholder = 'Адаптированный перевод / решение';
+        solution.value = row.translationSolution || '';
+        tdSolution.appendChild(solution);
+
+        const tdType = document.createElement('td');
+        const select = document.createElement('select');
+        select.className = 'input';
+        select.dataset.glossary = 'compensationType';
+        CompensationTypes.forEach(t => {
+          const opt = document.createElement('option');
+          opt.value = t;
+          opt.textContent = t;
+          select.appendChild(opt);
+        });
+        select.value = row.compensationType || '—';
+        tdType.appendChild(select);
+
+        [tdNum, tdSource, tdSolution, tdType].forEach(td => tr.appendChild(td));
+        glossaryTbody.appendChild(tr);
+      }
+    }
+    renderGlossaryRows();
+
+    document.getElementById('save-glossary')?.addEventListener('click', () => {
+      const glossary = getGlossaryRowsFromDOM();
+      safeSet(KEY_GLOSSARY, glossary);
+      safeSet(KEY_FINAL, { finalText: finalText?.value, commentary: commentary?.value, glossary });
+      setStatus(status, '✅ Глоссарий из 10 единиц сохранён.', 'success');
+    });
+
     document.getElementById('gen-commentary')?.addEventListener('click', () => {
       const rows = (audit.rows || []).slice(0, 5);
       const lines = [
@@ -375,6 +473,16 @@
           lines.push('   Обоснование (ПА/РЦИ/ПК): __________________________');
         });
       }
+      const glossary = getGlossaryRowsFromDOM().filter(r => r.sourceUnit || r.translationSolution || (r.compensationType && r.compensationType !== '—'));
+      lines.push('', 'Мини-глоссарий культурно маркированных единиц:');
+      if (!glossary.length) {
+        lines.push('(глоссарий пока не заполнен — заполните 10 строк ниже)');
+      } else {
+        glossary.slice(0, 10).forEach((g, i) => {
+          lines.push((i + 1) + ') ' + (g.sourceUnit || '—') + ' → ' + (g.translationSolution || '—') + ' (' + (g.compensationType || '—') + ')');
+        });
+      }
+
       lines.push('', 'Контроль качества (чек-лист):');
       lines.push('- Проверена точность смысла и полнота передачи (ПА)');
       lines.push('- Проверена модальность/оценочность и жанр/регистр (РЦИ)');
@@ -385,8 +493,10 @@
     });
 
     document.getElementById('save-final')?.addEventListener('click', () => {
-      safeSet(KEY_FINAL, { finalText: finalText?.value, commentary: commentary?.value });
-      setStatus(status, '✅ Этап 3 сохранён.', 'success');
+      const glossary = getGlossaryRowsFromDOM();
+      safeSet(KEY_GLOSSARY, glossary);
+      safeSet(KEY_FINAL, { finalText: finalText?.value, commentary: commentary?.value, glossary });
+      setStatus(status, '✅ Этап 3 и глоссарий сохранены.', 'success');
     });
 
     document.getElementById('download-report')?.addEventListener('click', () => {
@@ -417,6 +527,9 @@
         finalText?.value || '—', '',
         '--- ПЕРЕВОДЧЕСКИЙ КОММЕНТАРИЙ ---',
         commentary?.value || '—', '',
+        '--- МИНИ-ГЛОССАРИЙ: 10 КЛЮЧЕВЫХ ЕДИНИЦ ---',
+        ...getGlossaryRowsFromDOM().map((g, i) => (i+1) + ') ' + (g.sourceUnit || '—') + ' → ' + (g.translationSolution || '—') + ' | ' + (g.compensationType || '—')),
+        '',
         '--- ОЦЕНИВАНИЕ (ПА / РЦИ / ПК) ---',
         'ПА: ' + (score.PA ?? '—') + '  РЦИ: ' + (score.RCI ?? '—') + '  ПК: ' + (score.PK ?? '—'),
         'Сумма: ' + ((score.PA ?? 0) + (score.RCI ?? 0) + (score.PK ?? 0)) + ' / 15',
@@ -426,14 +539,17 @@
     });
 
     document.getElementById('push-to-score')?.addEventListener('click', () => {
-      safeSet(KEY_FINAL, { finalText: finalText?.value, commentary: commentary?.value });
+      const glossary = getGlossaryRowsFromDOM();
+      safeSet(KEY_GLOSSARY, glossary);
+      safeSet(KEY_FINAL, { finalText: finalText?.value, commentary: commentary?.value, glossary });
       safeSet(KEY_PAYLOAD, {
         sourceText: c.sourceText || '',
         targetText: finalText?.value || '',
         caseMeta: { caseTitle: c.caseTitle||'', sourceLang: c.sourceLang||'', targetLang: c.targetLang||'', audience: c.audience||'', genre: c.genre||'', purpose: c.purpose||'', strategy: c.strategy||'' },
         auditRows: audit.rows || [],
+        glossary: glossary,
       });
-      setStatus(status, '✅ Данные переданы в раздел «Оценивание».', 'success');
+      setStatus(status, '✅ Данные, включая глоссарий, переданы в раздел «Оценивание».', 'success');
     });
   }
 
@@ -514,6 +630,7 @@
         'ИСХОДНЫЙ ТЕКСТ: ' + payload.sourceText,
         'ПЕРЕВОД: ' + payload.targetText,
         'АУДИТ: ' + JSON.stringify(payload.auditRows||[]).slice(0,4000),
+        'ГЛОССАРИЙ: ' + JSON.stringify(payload.glossary||[]).slice(0,3000),
         'РУБРИКА: ' + rubric,
         'Верни ТОЛЬКО валидный JSON: {"PA":<0-5>,"RCI":<0-5>,"PK":<0-5>,"rationale":"<кратко>"}',
       ].join('\n\n');
