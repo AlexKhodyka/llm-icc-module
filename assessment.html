@@ -32,35 +32,33 @@
       <p>Калькулятор баллов и AI-оценка (опционально).</p>
     </div>
 
-    
-<div class="card" id="assessment-tool">
-  <h2>Оценивание</h2>
-  <p class="small">Баллы (0–5) + расчёт показателей. При наличии API можно получить AI-оценку.</p>
-  <div id="api-status2" class="note"></div>
+    <div class="card" id="assessment-tool">
+      <h2>Оценивание по критериям ПА / РЦИ / ПК</h2>
+      <p class="small">Введите баллы (0–5) по каждому критерию. При наличии API можно получить AI-оценку автоматически.</p>
+      <div id="api-status2" class="note"></div>
 
-  <div class="grid two">
-    <div>
-      <label for="scorePA">ПА (0–5)</label>
-      <input class="input" id="scorePA" type="number" min="0" max="5" step="1" />
+      <div class="grid two">
+        <div>
+          <label for="scorePA">ПА — Прагматическая адекватность (0–5)</label>
+          <input class="input" id="scorePA" type="number" min="0" max="5" step="1" />
+        </div>
+        <div>
+          <label for="scoreRCI">РЦИ — Распознавание цифровой интерференции (0–5)</label>
+          <input class="input" id="scoreRCI" type="number" min="0" max="5" step="1" />
+        </div>
+      </div>
+
+      <label for="scorePK">ПК — Приёмы компенсации (0–5)</label>
+      <input class="input" id="scorePK" type="number" min="0" max="5" step="1" />
+
+      <div id="scoreOut"></div>
+
+      <div class="btnrow">
+        <button class="btn primary" id="download-score" type="button">Скачать assessment.txt</button>
+        <button class="btn ok" id="ai-score" type="button">AI-оценка через API</button>
+      </div>
+      <div id="assess-status" class="note"></div>
     </div>
-    <div>
-      <label for="scoreRCI">РЦИ (0–5)</label>
-      <input class="input" id="scoreRCI" type="number" min="0" max="5" step="1" />
-    </div>
-  </div>
-
-  <label for="scoreCS">КС (0–5)</label>
-  <input class="input" id="scoreCS" type="number" min="0" max="5" step="1" />
-
-  <div id="scoreOut"></div>
-
-  <div class="btnrow">
-    <button class="btn primary" id="download-score" type="button">Скачать assessment.txt</button>
-    <button class="btn ok" id="ai-score" type="button">AI-оценка через API</button>
-  </div>
-  <div id="assess-status" class="note"></div>
-</div>
-
 
     <div class="footer">© 2026 • Учебно-методический ресурс (GitHub Pages).</div>
   </div>
