@@ -2,10 +2,9 @@
   /* ============================================================
      LLM-ICC Module — script.js  (исправленная версия)
      Исправления:
-       1) КС → ПК во всех метках и переменных
-       2) Прямой вызов Anthropic API (без серверного прокси)
-          — ключ вводится один раз и хранится только в памяти
-       3) Серверный прокси (config.js) по-прежнему поддерживается
+       1) Старое обозначение заменено на ПК во всех видимых метках
+       2) Автономный режим без API: промпты копируются во внешнюю LLM вручную
+       3) Серверный прокси (config.js) поддерживается как опциональный режим
   ============================================================ */
 
   /* ── Навигация: подсветка активной ссылки ── */
@@ -59,58 +58,13 @@
 
   /* ──────────────────────────────────────────
      API: два режима
-     1) Серверный прокси (config.js, приоритет)
-     2) Прямой вызов Anthropic (ключ пользователя)
+     1) Серверный прокси (config.js), если он настроен
+     2) Автономный режим: без API, ручное копирование промптов
   ────────────────────────────────────────── */
   const API_BASE = (window.LLM_API_BASE || '').trim();
   let _anthropicKey = ''; // только в памяти
 
-  function getAnthropicKey() {
-    if (_anthropicKey) return _anthropicKey;
-    const k = prompt(
-      'Введите ваш Anthropic API Key (начинается с sk-ant-...).\n' +
-      'Ключ хранится только в памяти этой вкладки — не сохраняется в браузере.'
-    );
-    if (k && k.trim().startsWith('sk-ant-')) {
-      _anthropicKey = k.trim();
-      return _anthropicKey;
-    }
-    return null;
-  }
-
-  async function apiPostProxy(endpoint, payload) {
-    const resp = await fetch(API_BASE + endpoint, {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json' },
-      body: JSON.stringify(payload),
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data?.error || 'Ошибка прокси-сервера');
-    return data;
-  }
-
-  async function apiPostAnthropic(systemPrompt, userPrompt) {
-    const key = getAnthropicKey();
-    if (!key) throw new Error('API-ключ не введён. Вставьте ключ Anthropic (sk-ant-...).');
-    const resp = await fetch('https://api.anthropic.com/v1/messages', {
-      method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'x-api-key': key,
-        'anthropic-version': '2023-06-01',
-        'anthropic-dangerous-direct-browser-access': 'true',
-      },
-      body: JSON.stringify({
-        model: 'claude-sonnet-4-20250514',
-        max_tokens: 1500,
-        system: systemPrompt,
-        messages: [{ role: 'user', content: userPrompt }],
-      }),
-    });
-    const data = await resp.json();
-    if (!resp.ok) throw new Error(data?.error?.message || 'Ошибка Anthropic API');
-    return (data.content || []).map(b => b.text || '').join('');
-  }
+  // Прямой браузерный вызов внешних API отключён: сайт по умолчанию работает автономно.
 
   async function callLLM(proxyEndpoint, proxyPayload, systemPrompt, userPrompt, statusEl) {
     if (API_BASE) {
@@ -118,8 +72,7 @@
       const data = await apiPostProxy(proxyEndpoint, proxyPayload);
       return data.text || data.raw || JSON.stringify(data);
     } else {
-      setStatus(statusEl, '⏳ Запрос к Anthropic API…', 'note');
-      return await apiPostAnthropic(systemPrompt, userPrompt);
+      throw new Error('API не настроен. Автономный режим: скопируйте промпт во внешнюю LLM и вставьте ответ вручную.');
     }
   }
 
@@ -205,7 +158,7 @@
     if (apiEl) {
       apiEl.textContent = API_BASE
         ? ('✅ Серверный прокси: ' + API_BASE)
-        : 'ℹ️ Серверный прокси не настроен — будет использован прямой вызов Anthropic API (потребуется ваш ключ).';
+        : 'ℹ️ Автономный режим: серверный прокси не настроен. Скопируйте промпт во внешнюю LLM и вставьте ответ вручную.';
       apiEl.className = API_BASE ? 'success' : 'note';
     }
   }
@@ -225,6 +178,16 @@
     const prompts = { A: document.getElementById('promptA'), B: document.getElementById('promptB'), C: document.getElementById('promptC') };
     const outputs = { A: document.getElementById('outA'),   B: document.getElementById('outB'),   C: document.getElementById('outC')   };
     const status  = document.getElementById('stage1-status');
+    if (!API_BASE) {
+      ['A','B','C'].forEach(v => {
+        const b = document.getElementById('gen' + v);
+        if (b) {
+          b.disabled = true;
+          b.textContent = 'API отключён';
+          b.title = 'Автономный режим: скопируйте промпт и вставьте ответ вручную.';
+        }
+      });
+    }
 
     const s1saved = safeGet(KEY_STAGE1);
     if (s1saved) {
@@ -476,17 +439,24 @@
 
   /* ══════════════════════════════════════════
      СТРАНИЦА: assessment.html
-     ИСПРАВЛЕНО: КС → ПК
+     ИСПРАВЛЕНО: используется ПК
   ══════════════════════════════════════════ */
   const assessEl = document.getElementById('assessment-tool');
   if (assessEl) {
     const saved  = safeGet(KEY_SCORE) || { PA: 0, RCI: 0, PK: 0 };
     const paEl   = document.getElementById('scorePA');
     const rciEl  = document.getElementById('scoreRCI');
-    // Поддержка обоих id: scorePK (новый) и scoreCS (старый)
-    const pkEl   = document.getElementById('scorePK') || document.getElementById('scoreCS');
+    const pkEl   = document.getElementById('scorePK');
     const outEl  = document.getElementById('scoreOut');
     const status = document.getElementById('assess-status');
+    if (!API_BASE) {
+      const aiBtn = document.getElementById('ai-score');
+      if (aiBtn) {
+        aiBtn.disabled = true;
+        aiBtn.textContent = 'AI-оценка отключена';
+        aiBtn.title = 'Автономный режим: введите баллы вручную.';
+      }
+    }
 
     function update() {
       const PA  = Number(paEl?.value  || 0);
@@ -511,7 +481,7 @@
 
     if (paEl)  paEl.value  = saved.PA  ?? 0;
     if (rciEl) rciEl.value = saved.RCI ?? 0;
-    if (pkEl)  pkEl.value  = saved.PK  ?? saved.CS ?? 0;
+    if (pkEl)  pkEl.value  = saved.PK  ?? 0;
     [paEl, rciEl, pkEl].filter(Boolean).forEach(el => el.addEventListener('input', update));
     update();
 
@@ -553,12 +523,9 @@
         if (API_BASE) {
           setStatus(status, '⏳ Запрос к серверу…', 'note');
           const data = await apiPostProxy('/api/score', payload);
-          parsed = { PA: data.PA, RCI: data.RCI, PK: data.PK ?? data.CS, rationale: data.rationale };
+          parsed = { PA: data.PA, RCI: data.RCI, PK: data.PK, rationale: data.rationale };
         } else {
-          setStatus(status, '⏳ Запрос к Anthropic API…', 'note');
-          const text = await apiPostAnthropic('Ты строгий экзаменатор. Отвечай только валидным JSON без markdown.', scoringPrompt);
-          parsed = JSON.parse(text.replace(/```json|```/g, '').trim());
-          if (parsed.CS !== undefined && parsed.PK === undefined) parsed.PK = parsed.CS;
+          throw new Error('API не настроен. В автономном режиме оценивание выполняется вручную.');
         }
         if (typeof parsed.PA  === 'number' && paEl)  paEl.value  = parsed.PA;
         if (typeof parsed.RCI === 'number' && rciEl) rciEl.value = parsed.RCI;
@@ -574,7 +541,7 @@
     if (apiEl2) {
       apiEl2.textContent = API_BASE
         ? ('✅ Серверный прокси: ' + API_BASE)
-        : 'ℹ️ Прямой вызов Anthropic API (потребуется ваш ключ при нажатии «AI-оценка»).';
+        : 'ℹ️ Автономный режим: AI-оценка через API отключена. Введите баллы вручную по шкале.';
       apiEl2.className = API_BASE ? 'success' : 'note';
     }
   }

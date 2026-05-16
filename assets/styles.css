@@ -60,3 +60,7 @@ label{display:block;font-size:12px;color:var(--muted);margin:10px 0 6px}
 .kpi b{font-size:14px}
 .split{display:grid;grid-template-columns:1fr 1fr;gap:16px}
 @media (max-width: 900px){.split{grid-template-columns:1fr}}
+
+.back-home-row{margin:0 0 16px}
+.btn:disabled{opacity:.45;cursor:not-allowed}
+.btn:disabled:hover{background:rgba(255,255,255,.03);text-decoration:none}

@@ -1,32 +1,21 @@
-# LLM-ассистированный перевод — GitHub Pages + Serverless Proxy
+# LLM-ассистированный перевод — автономный сайт для GitHub Pages
 
-## 1) Сайт (GitHub Pages)
-Публикация:
-Settings → Pages → Deploy from a branch → main → /(root)
+## Структура проекта
+- `index.html` — главная страница и форма кейса
+- `module.html`, `stage1.html`, `stage2.html`, `stage3.html`, `assessment.html` — этапы модуля
+- `assets/` — стили, конфигурация и JavaScript
+- `downloads/` — шаблоны и материалы для скачивания
+- `worker/` — опциональная серверная прослойка Cloudflare Worker
 
-## 2) Серверная прослойка (Cloudflare Worker)
-Зачем: GitHub Pages — статический хостинг, поэтому вызовы к OpenAI API делаем через серверless-прокси.
+## Режим без API
+По умолчанию `assets/config.js` содержит пустой `window.LLM_API_BASE = "";`.
+Сайт работает автономно: пользователь копирует промпты во внешнюю LLM и вставляет результат вручную.
 
-### Развёртывание (Wrangler)
-1) Установите Wrangler и войдите:
-   - wrangler login
-2) Перейдите в папку `worker/`
-3) Установите секрет:
-   - wrangler secret put OPENAI_API_KEY
-4) Деплой:
-   - wrangler deploy
+## Опциональный режим API
+Если позже понадобится серверный API, разверните Cloudflare Worker из папки `worker/` и пропишите адрес в `assets/config.js`:
 
-### CORS
-В `worker/wrangler.toml` установите:
-ALLOWED_ORIGINS="https://<username>.github.io"
-
-## 3) Подключение API на сайте
-Откройте `assets/config.js` и задайте:
+```js
 window.LLM_API_BASE = "https://<worker-name>.<subdomain>.workers.dev";
+```
 
-После этого:
-- Этап 1: кнопки «Генерировать через API» начнут работать (A/B/C).
-- Оценивание: «AI-оценка через API» начнёт работать.
-
-## 4) Безопасность
-Никогда не размещайте OPENAI_API_KEY в репозитории. Используйте секреты Worker/Vercel/Netlify.
+API-ключ нельзя хранить в репозитории или в браузерном JavaScript.

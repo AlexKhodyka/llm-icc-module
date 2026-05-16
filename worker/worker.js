@@ -58,7 +58,7 @@ export default {
 
       const scoringPrompt = [
         "Evaluate the translation using the rubric and return STRICT JSON only.",
-        "Fields: PA (0-5 integer), RCI (0-5 integer), CS (0-5 integer), rationale (short).",
+        "Fields: PA (0-5 integer), RCI (0-5 integer), PK (0-5 integer), rationale (short).",
         "",
         "CASE META:",
         JSON.stringify(caseMeta),
@@ -164,5 +164,5 @@ function extractText(data) {
 function defaultRubric(){
   return `PA (Pragmatic adequacy): 0-1 ignores audience/genre; 2-3 mostly appropriate; 4-5 fully appropriate.
 RCI (Digital interference detection): 0-1 issues not detected; 2-3 most detected; 4-5 all key issues detected and fixed.
-CS (Compensation techniques): 0-1 no compensation; 2-3 partial; 4-5 optimal compensation.`;
+PK (Compensation techniques): 0-1 no compensation; 2-3 partial; 4-5 optimal compensation.`;
 }
